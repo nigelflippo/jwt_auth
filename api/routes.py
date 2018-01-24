@@ -7,14 +7,22 @@ from api import app, db, bcrypt
 def index():
 	return "JWT AUTH"
 
-@app.route('/users/auth/register', methods=['POST'])
+@app.route('/auth/register', methods=['POST'])
 def register():
 	email = request.json.get('email')
 	password = request.json.get('password')
 	if email is None or password is None:
-		abort(400)
+		responseObject = {
+			'status': 'error',
+			'message': 'Invalid input.'
+		}
+		return jsonify(responseObject), 400
 	if Users.query.filter_by(email=email).first() is not None:
-		abort(400)
+		responseObject = {
+			'status': 'error',
+			'message': 'User already exists.'
+		}
+		return jsonify(responseObject), 400
 	user = Users(
 		email=email, 
 		password=password
@@ -29,7 +37,60 @@ def register():
 		'message': 'Successfully registered',
 		'auth_token': auth_token.decode()
 	}
-	return make_response(jsonify(responseObject)), 201
+	return jsonify(responseObject), 201
+
+@app.route('/auth/login', methods=['POST'])
+def user_login():
+	email = request.json.get('email')
+	password = request.json.get('password')
+	user = Users.query.filter_by(email=email).first()
+	if user and bcrypt.check_password_hash(user.password, password):
+		auth_token = user.encode_auth_token(user.id)
+		if auth_token:
+			responseObject = {
+				'status': 'success',
+				'message': 'Successfully logged in.',
+				'auth_token': auth_token.decode()
+			}
+			return jsonify(responseObject), 200
+	else:
+		responseObject = {
+			'status': 'error',
+			'message': 'Invalid login.'
+		}
+		return jsonify(responseObject), 404
+
+@app.route('/auth/status', methods=['GET'])
+def get_auth():
+	auth_header = request.headers.get('Authorization')
+	auth_token = auth_header.split(' ')[0]
+
+	if auth_token:
+		decoded = Users.decode_auth_token(auth_token)
+		if isinstance(decoded, str):
+			responseObject = {
+			'status': 'error',
+			'message': decoded
+			}
+			return jsonify(responseObject), 401
+		else:
+			user = Users.query.get(decoded)
+			responseObject = {
+				'status': 'success',
+				'data': {
+					'user_id': user.id,
+					'email': user.email,
+					'admin': user.admin,
+					'registered_on': user.registered_on
+				}
+			}
+			return jsonify(responseObject), 200
+	else:
+		responseObject = {
+			'status': 'error',
+			'message': 'Invalid token.'
+		}
+	
 
 @app.route('/users/<int:id>')
 def get_user(id):
