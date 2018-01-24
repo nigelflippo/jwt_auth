@@ -22,8 +22,14 @@ def register():
 	db.session.add(user)
 	db.session.commit()
 
-
-	return jsonify({'email': user.email}), 201
+	auth_token = user.encode_auth_token(user.id)
+	responseObject = {
+		'email': user.email,
+		'status': 'success',
+		'message': 'Successfully registered',
+		'auth_token': auth_token.decode()
+	}
+	return make_response(jsonify(responseObject)), 201
 
 @app.route('/users/<int:id>')
 def get_user(id):
