@@ -4,7 +4,7 @@
 ```shell
 $ python3 -m venv venv
 $ source venv/bin/activate
-$ flask -r requirements.txt
+$ pip install -r requirements.txt
 $ createdb jwt_auth
 $ flask db init
 $ flask db migrate
@@ -18,3 +18,5 @@ $ export FLASK_APP=api.py
 >>> os.urandom(24)
 $ export SECRET_KEY='code generated above'
 ```
+
+- Use HTTPIE to test routes
