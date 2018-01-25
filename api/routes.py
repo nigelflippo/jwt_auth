@@ -32,7 +32,6 @@ def register():
 
 	auth_token = user.encode_auth_token(user.id)
 	responseObject = {
-		'email': user.email,
 		'status': 'success',
 		'message': 'Successfully registered',
 		'auth_token': auth_token.decode()
@@ -49,6 +48,7 @@ def user_login():
 		auth_token = user.encode_auth_token(user.id)
 		if auth_token:
 			responseObject = {
+				'email': user.email,
 				'status': 'success',
 				'message': 'Successfully logged in.',
 				'auth_token': auth_token.decode()
