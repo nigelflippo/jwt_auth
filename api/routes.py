@@ -38,6 +38,7 @@ def register():
 		'auth_token': auth_token.decode()
 	}
 	return jsonify(responseObject), 201
+		
 
 @app.route('/auth/login', methods=['POST'])
 def user_login():
